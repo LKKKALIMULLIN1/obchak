@@ -1,8 +1,9 @@
 import telebot
 from telebot import types
-from prettytable import PrettyTable
 import json
 import counter
+import showing_data
+import delete_line_of_data
 
 # token = "5539695234:AAELsA-kz78QW6XWLR0dLSkPR1XSHzdvgJo"
 token = "5094695265:AAHl3W5t1QVl8F3BlJS4S7usojzZKxnQOWQ"
@@ -12,7 +13,7 @@ date = ''
 for_what = ""
 who = ''
 how_much = 0
-cnt = 0
+cnt = 2
 without_whom = []
 users = ['isk', 'doc', 'maj', 'sen', 'dep', 'jos']
 
@@ -40,45 +41,22 @@ def start(message):
         bot.send_message(message.chat.id, text="Чтобы начать напиши: /start")
 
 
-def show_data(id):  # Printing all data about obchak
-    mytable = PrettyTable()
-    mytable.field_names = ['Date', "For what", "Who", "How much", "Without whom"]
-    f = open('data.txt').readline
-    arr = []
-    for i in range(cnt):
-        arr.append(json.loads(f()[:-1]))
-    mytable.add_rows(arr)
-    mytable.align = 'c'
-    s = "```\n" + str(mytable) + "\n```"
-    bot.send_message(id, text=s, parse_mode="Markdown")
-
-
-def count(id):
-    if cnt == 0:
-        bot.send_message(id, text="Никто никому ничего не должен, классно же)")
-        return
-
-    f = open('data.txt').readline
-    arr = []
-    for i in range(cnt):
-        arr.append(json.loads(f()[:-1]))
-    txt = counter.count(arr, users)
-    bot.send_message(id, text=txt, parse_mode="Markdown")
-
-
 @bot.message_handler(content_types=['text'])
 def func(message):
     if message.text == "show":
-        show_data(message.chat.id)
+        txt = showing_data.show_data(cnt)
+        bot.send_message(message.chat.id, text=txt, parse_mode="Markdown")
     elif message.text == "add":
         bot.send_message(message.chat.id, text="когда была покупка?", reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, get_date)
-    elif message.text == "change":
-        pass
     elif message.text == "delete":
-        pass
+        delete_line_of_data.delete_line()
     elif message.text == 'count':
-        count(message.chat.id)
+        if cnt == 0:
+            bot.send_message(message.chat.id, text="Никто никому ничего не должен, классно же)")
+        else:
+            txt = counter.count(users, cnt)
+            bot.send_message(message.chat.id, text=txt, parse_mode="Markdown")
 
 
 def get_date(message):
@@ -126,6 +104,7 @@ def get_how_much(message):
 def get_without_whom(message):
     global without_whom
     flag = 1
+    without_whom = []
     if message.text != 'all':
         without_whom = message.text.split()
         for i in range(len(without_whom)):

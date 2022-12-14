@@ -1,3 +1,5 @@
+import json
+
 def solve(d):
     ans = "```\n"
     pos_d = {}
@@ -23,7 +25,11 @@ def solve(d):
     return ans
 
 
-def count(arr, names):
+def count(names, cnt):
+    f = open('data.txt').readline
+    arr = []
+    for i in range(cnt):
+        arr.append(json.loads(f()[:-1]))
     d = {}
     for i in names:
         d[i] = 0
